@@ -1,1 +1,48 @@
+name: Quartal BOOX Note Air 3C native APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Test period and Google date logic (no Android SDK needed)
+        run: |
+          mkdir -p testbuild
+          javac -encoding UTF-8 -d testbuild app/src/main/java/de/quartal/boox/PeriodLogic.java tests/PeriodLogicTest.java
+          java -cp testbuild PeriodLogicTest
+      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK 35
+        run: sdkmanager --install 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Verify native project
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          manifest=Path('app/src/main/AndroidManifest.xml').read_text()
+          java=Path('app/src/main/java/de/quartal/boox/MainActivity.java').read_text()
+          assert 'android.permission.READ_CALENDAR' in manifest
+          assert 'android.permission.INTERNET' not in manifest
+          assert 'WebView' not in java and 'loadUrl' not in java
+          for token in ['renderWeeks', 'renderQuarter', 'renderDay', 'IsoFields.WEEK_OF_WEEK_BASED_YEAR', 'importJson', 'importIcs', 'exportJson', 'exportIcs', 'CalendarContract.Instances', 'renderAgendaOnly', 'openGoogleTemplate']:
+              assert token in java, token
+          print('Native project source checks passed')
+          PY
+      - name: Build debug APK
+        run: gradle --no-daemon --stacktrace assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Quartal-BOOX-2.0.1-device-test-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
