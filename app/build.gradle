@@ -1,0 +1,16 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'de.quartal.boox'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'de.quartal.boox.v2'
+        minSdk 29
+        targetSdk 35
+        versionCode 4
+        versionName '2.0.1-device-test'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
