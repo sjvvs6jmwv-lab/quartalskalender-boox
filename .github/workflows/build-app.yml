@@ -20,7 +20,7 @@ jobs:
           mkdir -p testbuild
           javac -encoding UTF-8 -d testbuild app/src/main/java/de/quartal/boox/PeriodLogic.java tests/PeriodLogicTest.java
           java -cp testbuild PeriodLogicTest
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
       - name: Install Android SDK 35
         run: sdkmanager --install 'platforms;android-35' 'build-tools;35.0.0'
       - uses: gradle/actions/setup-gradle@v4
